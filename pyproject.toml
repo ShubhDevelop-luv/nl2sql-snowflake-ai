@@ -1,0 +1,24 @@
+[project]
+name = "nl2sql-snowflake"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "faiss-cpu>=1.12.0",
+    "fastapi>=0.116.1",
+    "langchain>=0.3.27",
+    "langchain-community>=0.3.29",
+    "langchain-openai>=0.3.32",
+    "langgraph>=0.6.6",
+    "numpy>=2.0.2",
+    "orjson>=3.11.3",
+    "pandas>=2.3.2",
+    "pydantic>=2.11.7",
+    "pymongo>=4.14.1",
+    "python-dotenv>=1.1.1",
+    "snowflake-connector-python>=3.17.2",
+    "sqlglot>=27.10.0",
+    "tenacity>=9.1.2",
+    "uvicorn>=0.35.0",
+]

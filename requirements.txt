@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+langchain
+langgraph
+langchain-openai
+faiss-cpu
+sqlglot
+snowflake-connector-python
+tenacity
+orjson
+pymongo
