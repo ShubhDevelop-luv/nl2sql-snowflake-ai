@@ -37,10 +37,14 @@ def fetch_all(sql: str) -> Tuple[List[str], List[Tuple[Any, ...]]]:
     try:
         with conn.cursor() as cur:
             log.info("Executing SQL", extra={"sql": sql})
+            print(f"Executing SQL: {sql}")
             cur.execute(sql)
             cols = [d[0] for d in cur.description] if cur.description else []
             rows = cur.fetchall()
             return cols, rows # pyright: ignore[reportReturnType]
+    except Exception as e:
+        log.error(f"Error executing SQL: {e}", extra={"sql": sql, "error": str(e)})
+        raise
     finally:
         conn.close()
 
@@ -59,7 +63,7 @@ def get_schema_info() -> List[Tuple[str, str, str, str]]:
         SELECT c.TABLE_NAME, c.COLUMN_NAME, c.DATA_TYPE, c.COMMENT
         FROM {settings.SNOWFLAKE_DATABASE}.INFORMATION_SCHEMA.COLUMNS c
         WHERE c.TABLE_SCHEMA = '{settings.SNOWFLAKE_SCHEMA}'
-        AND c.TABLE_NAME IN ('PER_LATEST', 'VELOCITY_ENHANCED_UNLIMITED_LATEST') 
+        AND c.TABLE_NAME IN ('ORG_LATEST') 
         ORDER BY c.TABLE_NAME, c.ORDINAL_POSITION
         """
         with conn.cursor() as cur:
@@ -75,7 +79,7 @@ def get_tables() -> List[str]:
         SELECT TABLE_NAME
         FROM {settings.SNOWFLAKE_DATABASE}.INFORMATION_SCHEMA.TABLES
         WHERE TABLE_SCHEMA = '{settings.SNOWFLAKE_SCHEMA}'
-        AND TABLE_NAME IN ('PER_LATEST', 'VELOCITY_ENHANCED_UNLIMITED_LATEST') 
+        AND TABLE_NAME IN ('ORG_LATEST') 
         ORDER BY TABLE_NAME
         """
         with conn.cursor() as cur:
@@ -91,7 +95,7 @@ def get_views() -> List[str]:
         SELECT TABLE_NAME
         FROM {settings.SNOWFLAKE_DATABASE}.INFORMATION_SCHEMA.VIEWS
         WHERE TABLE_SCHEMA = '{settings.SNOWFLAKE_SCHEMA}'
-        AND TABLE_NAME IN ('PER_LATEST', 'VELOCITY_ENHANCED_UNLIMITED_LATEST') 
+        AND TABLE_NAME IN ('ORG_LATEST') 
         ORDER BY TABLE_NAME
         """
         with conn.cursor() as cur:

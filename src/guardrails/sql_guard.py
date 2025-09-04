@@ -23,7 +23,7 @@ def enforce_limit(sql: str, default_limit: int, hard_cap: int) -> str:
         has_limit = any(isinstance(node, exp.Limit) for node in parsed.find_all(exp.Limit))
         if not has_limit:
             logger.info(f"No LIMIT found in query. Adding default LIMIT {default_limit}.")
-            parsed.set("limit", exp.Limit(this=exp.Literal.number(default_limit)))
+            parsed = exp.select("*").from_(parsed.subquery("sub")).limit(default_limit) # type: ignore
         # Cap any existing limit
         for node in parsed.find_all(exp.Limit):
             lit = node.this
