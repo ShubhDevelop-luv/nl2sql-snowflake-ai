@@ -2,12 +2,16 @@ from typing import TypedDict, List, Any, Dict
 from langgraph.graph import StateGraph, END
 from src.nodes.intent import run_intent
 from src.nodes.clarify import run_clarify
+from src.nodes.enrich import run_extract_enrichments
 from src.nodes.followup import run_followup_rewrite
 from src.nodes.plan import run_plan_sql
 from src.nodes.validate import run_validate_sql
 from src.nodes.execute import run_execute
 from src.nodes.repair import run_repair_and_execute
 from src.nodes.respond import run_respond
+from src.nodes.plan_with_enrichments import run_plan_with_enrichments  
+
+
 
 class AgentState(TypedDict, total=False):
     session_id: str
@@ -33,9 +37,30 @@ def _route_after_intent(state: AgentState):
         return "clarify"
     if intent == "followup_query":
         return "followup"
+    if intent == "sql_plan_and_enrichments":
+        return "extract_enrichments"
     if intent in ("oos",):
         return "respond"
     return "plan"
+
+def _route_after_enrich(state: AgentState):
+    """
+    If enrichments exist after extraction, go to enrichment planner
+    If no enrichments but some keywords/deterministic, go to normal planner
+    If no enrichments and no keywords/deterministic, clarify
+    """
+    try:
+        if state.get("enrichment_active"):
+            return "plan_with_enrichments"
+        # If no usable filters/keywords, clarify
+        if not state.get("keywords") and not state.get("deterministic"):
+            state["awaiting_clarification"] = True
+            return "respond"
+        return "plan"
+    except Exception:
+        state["error"] = "Error determining enrichment routing"
+        return "respond"
+
 
 def _route_after_validate(state: AgentState):
     if state.get("awaiting_clarification"):
@@ -58,6 +83,7 @@ def build_graph():
     g.add_node("clarify", run_clarify) # type: ignore
     g.add_node("followup", run_followup_rewrite) # type: ignore
     g.add_node("plan", run_plan_sql) # type: ignore
+    g.add_node("plan_with_enrichments", run_plan_with_enrichments) # type: ignore
     g.add_node("validate", run_validate_sql) # type: ignore
     g.add_node("execute", run_execute) # type: ignore
     g.add_node("repair", run_repair_and_execute) # type: ignore
@@ -68,12 +94,20 @@ def build_graph():
     g.add_conditional_edges("intent", _route_after_intent, {
         "clarify": "clarify",
         "followup": "followup",
+        "extract_enrichments": "extract_enrichments",
         "plan": "plan",
         "respond": "respond",
     })
 
+    g.add_conditional_edges("extract_enrichments", _route_after_enrich, {
+        "plan_with_enrichments": "plan_with_enrichments",
+        "plan": "plan",
+        "respond": "respond"
+    })
+
     g.add_edge("followup", "plan")
     g.add_edge("plan", "validate")
+    g.add_edge("plan_with_enrichments", "validate")
 
     g.add_conditional_edges("validate", _route_after_validate, {
         "execute": "execute",

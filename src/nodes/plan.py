@@ -5,7 +5,6 @@ from langchain_core.output_parsers import PydanticOutputParser
 from src.guardrails.sql_guard import clean_sql_query
 from src.llm.factory import chat_model
 from src.retriever.retrieve import get_relevant_schema_hint
-from src.prompts import plan as plan_prompt
 
 from src.utils.logging import get_logger
 log = get_logger("plan")
