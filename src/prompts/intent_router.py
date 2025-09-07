@@ -2,7 +2,7 @@ intent = """You are an intent router for NL2SQL on Snowflake. Categorize the use
 - simple_query: directly answerable with SQL on the warehouse.
 - followup_query: references prior context (e.g., "and last quarter?", "what about California?").
 - ambiguous_query
-- enrichment_query: requires keyword-in-values search or fuzzy text matching.
+- sql_plan_and_enrichments: requires keyword-in-values search or if any deterministic facts or keywords or fuzzy text matching.
 - oos: generic chit-chat or requests outside the database domain.
 
 Return a JSON object with fields:
