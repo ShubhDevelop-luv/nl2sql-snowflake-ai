@@ -21,6 +21,7 @@ class QueryResponse(BaseModel):
     sql: Optional[str] = None
     columns: Optional[List[str]] = None
     rows: Optional[List[Any]] = None
+    enriched_rows: Optional[List[Dict[str, Any]]] = None
     error: Optional[str] = None
     clarifying_question: Optional[str] = None
     awaiting_clarification: Optional[bool] = False
@@ -65,6 +66,7 @@ def query(req: QueryRequest):
         sql=result_state.get("final_sql"),
         columns=result_state.get("columns"),
         rows=result_state.get("rows"),
+        enriched_rows=result_state.get("enriched_rows"),
         error=result_state.get("error"),
         clarifying_question=result_state.get("clarifying_question"),
         awaiting_clarification=result_state.get("awaiting_clarification", False),

@@ -68,6 +68,7 @@ def run_enrichment(state: Dict[str, Any]) -> Dict[str, Any]:
         enriched_rows.append({**row_dict, **data})
 
     state["enriched_rows"] = enriched_rows
+    log.info(f"Enriched {len(enriched_rows)} rows with insights.")
     return state
 
 
