@@ -1,6 +1,7 @@
-def main():
-    print("Hello from nl2sql-snowflake!")
+from src.app import query, QueryRequest
 
-
-if __name__ == "__main__":
-    main()
+query(
+    QueryRequest(
+        session_id="212", query="Find hospitals and their number of beds in ohio"
+    )
+)

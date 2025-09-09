@@ -4,8 +4,8 @@ from src.retriever.retrieve import get_relevant_schema_hint
 from src.guardrails.sql_guard import clean_sql_query
 from src.prompts.plan_sql_with_enrichments import plan_sql_with_enrichments_router
 from src.utils.logging import get_logger
-log = get_logger("plan_with_enrichments")
 
+log = get_logger("plan_with_enrichments")
 
 
 # def run_plan_with_enrichments(state: Dict[str, Any]) -> Dict[str, Any]:
@@ -25,6 +25,8 @@ log = get_logger("plan_with_enrichments")
 from typing import Dict, Any
 from src.llm.factory import chat_model
 import json
+import re
+
 
 def run_enrichment(state: Dict[str, Any]) -> Dict[str, Any]:
     spec = state.get("insights_spec", {})
@@ -41,19 +43,25 @@ def run_enrichment(state: Dict[str, Any]) -> Dict[str, Any]:
 
         # Build JSON payload for the LLM
         payload = {
-            "company_name": row_dict.get("COMPANY_NAME") or row_dict.get("company_name"),
-            "company_city": row_dict.get("LOCATION_CITY") or row_dict.get("company_city"),
-            "company_state": row_dict.get("LOCATION_STATE_CODE") or row_dict.get("company_state"),
-            "insights_spec": spec
+            "company_name": row_dict.get("COMPANY_NAME")
+            or row_dict.get("company_name"),
+            "company_city": row_dict.get("LOCATION_CITY")
+            or row_dict.get("company_city"),
+            "company_state": row_dict.get("LOCATION_STATE_CODE")
+            or row_dict.get("company_state"),
+            "insights_spec": spec,
         }
 
         # Send the JSON payload as the prompt
-        prompt = json.dumps(payload, ensure_ascii=False)
-        resp = llm.invoke(prompt).content # type: ignore
+        prompt = plan_sql_with_enrichments_router | llm
+        # json.dumps(payload, ensure_ascii=False)
+        resp = prompt.invoke({"payload": json.dumps(payload)})
+        resp = resp.content  # type: ignore
+        cleaned_response = re.sub(r"^```json\n|\n```$", "", resp)
 
         # Parse LLM output safely
         try:
-            data = json.loads(resp) # type: ignore
+            data = json.loads(cleaned_response)  # type: ignore
             # Ensure both keys exist, even if null
             if spec.get("name"):
                 data.setdefault(spec["name"], None)
@@ -61,7 +69,7 @@ def run_enrichment(state: Dict[str, Any]) -> Dict[str, Any]:
         except Exception:
             data = {
                 spec.get("name", "unknown"): None,
-                f"source_{spec.get('name', 'unknown')}": None
+                f"source_{spec.get('name', 'unknown')}": None,
             }
 
         # Merge enrichment into the original row dict
@@ -70,6 +78,3 @@ def run_enrichment(state: Dict[str, Any]) -> Dict[str, Any]:
     state["enriched_rows"] = enriched_rows
     log.info(f"Enriched {len(enriched_rows)} rows with insights.")
     return state
-
-
-
