@@ -9,7 +9,8 @@ from src.nodes.validate import run_validate_sql
 from src.nodes.execute import run_execute
 from src.nodes.repair import run_repair_and_execute
 from src.nodes.respond import run_respond
-from src.nodes.plan_with_enrichments import run_plan_with_enrichments  
+from src.nodes.plan_with_enrichments import run_enrichment  
+from src.nodes.extract_enrichment_spec import run_extract_enrichment_spec
 
 
 
@@ -38,7 +39,7 @@ def _route_after_intent(state: AgentState):
     if intent == "followup_query":
         return "followup"
     if intent == "sql_plan_and_enrichments":
-        return "extract_enrichments"
+        return "plan"
     if intent in ("oos",):
         return "respond"
     return "plan"
@@ -80,6 +81,7 @@ def _route_after_repair(state: AgentState):
 def build_graph():
     g = StateGraph(AgentState)
     g.add_node("intent", run_intent) # type: ignore
+    g.add_node("query_mode", run_query_mode) # type: ignore
     g.add_node("clarify", run_clarify) # type: ignore
     g.add_node("followup", run_followup_rewrite) # type: ignore
     g.add_node("plan", run_plan_sql) # type: ignore
@@ -88,6 +90,9 @@ def build_graph():
     g.add_node("execute", run_execute) # type: ignore
     g.add_node("repair", run_repair_and_execute) # type: ignore
     g.add_node("respond", run_respond) # type: ignore
+    # New enrichment nodes
+    g.add_node("extract_enrichment_spec", run_extract_enrichment_spec) # type: ignore
+    g.add_node("run_enrichment", run_enrichment) # type: ignore
 
     g.set_entry_point("intent")
 

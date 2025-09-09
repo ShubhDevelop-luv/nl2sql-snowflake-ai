@@ -1,5 +1,5 @@
 intent = """You are an intent router for NL2SQL on Snowflake. Categorize the user message into one of:
-- simple_query: directly answerable with SQL on the warehouse.
+- simple_query/sql_plan_and_enrichments: directly answerable with SQL on the warehouse.
 - followup_query: references prior context (e.g., "and last quarter?", "what about California?").
 - ambiguous_query
 - sql_plan_and_enrichments: requires keyword-in-values search or if any deterministic facts or keywords or fuzzy text matching.
