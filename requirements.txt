@@ -5,6 +5,7 @@ python-dotenv
 langchain
 langgraph
 langchain-openai
+langchain-community
 faiss-cpu
 sqlglot
 snowflake-connector-python
