@@ -28,7 +28,7 @@ Context:
 - Apply LIMIT sample_limit (hard cap 15)
 - Headquarters logic only when user asks for “headquartered” or “based in”: add c.LOCATION_IS_PRIMARY = TRUE
 - Deterministic filters only on real columns (geography, employees, revenue, industry, etc.)
-- Subjective filters: use safe keyword screens across ABOUT_US, SPECIALTIES, and INDUSTRY_* descriptions (e.g., ILIKE '%manufactur%')
+- Subjective filters: use safe keyword screens across ABOUT_US, SPECIALTIES, and multiple INDUSTRY_* descriptions (e.g., ILIKE '%manufactur%')
 - Currency: assume USD. If user mentions another currency, state the assumed USD conversion in search_summary only. Do not alter SQL.
 
 Safety:

@@ -11,12 +11,13 @@ Return just one text that I can parse with json.loads and respond with exactly 2
 <insights_spec.name> → the value  
 source_<insights_spec.name> → a short provenance note  
 
-Follow insights_spec precisely for the instruction on how to find the value.  
+Follow insights_spec precisely for the instruction on how to find the value.
+Do not return nested JSON. Make sure if their are multiple parts, they are aggregated using a relevant function in a single value.  
 Numbers → JSON number. Dates → ISO string YYYY-MM-DD. Text → JSON string.  
 Prefer the most recent official or primary source. If multiple, choose the newest credible one.  
 Include the year and month of the source information if possible.  
 No extra keys. No commentary beyond the provenance note.  
-Return null only if you can’t find anything. It is better to return some value than nothing.  
+Return null only if you can't find anything. It is better to return some value than nothing.  
 
 Provenance note (source_):  
 A concise string ≤ 480 chars that names the best verification locus (e.g., “2024 annual report,” “state DOH hospital profile,” “company careers page,” “10-K Item 1,” “press release on YYYY-MM-DD”).  

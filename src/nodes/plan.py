@@ -35,20 +35,24 @@ def run_plan_sql(state: Dict[str, Any]) -> Dict[str, Any]:
             state["error"] = "Missing natural language query."
             return state
 
-        schema_hint = get_relevant_schema_hint(nl_query)
-        if not schema_hint:
-            log.warning("No relevant schema hint found for query: %s", nl_query)
+        if state.get("schema_hint") is None:
+            schema_hint = get_relevant_schema_hint(nl_query)
+            if not schema_hint:
+                log.warning("No relevant schema hint found for query: %s", nl_query)
+            state["schema_hint"] = schema_hint
 
-        llm = chat_model(temperature=0.0)
+        llm = chat_model(temperature=0.05)
 
         prompt = plan_sql_prompt | llm  # type: ignore
-        prompt = prompt.invoke({"nl_query": nl_query, "schema_hint": schema_hint})
+        prompt = prompt.invoke(
+            {"nl_query": nl_query, "schema_hint": state["schema_hint"]}
+        )
         if not prompt:
             log.error("LLM did not return SQL for query: %s", nl_query)
             state["error"] = "LLM failed to generate SQL."
             return state
 
-        state["schema_hint"] = schema_hint
+        # state["schema_hint"] = schema_hint
         state["proposed_sql"] = clean_sql_query(prompt.content.strip())  # type: ignore
         # print(state["proposed_sql"])
         log.info("SQL generated successfully for query: %s", state["proposed_sql"])

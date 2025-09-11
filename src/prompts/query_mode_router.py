@@ -1,5 +1,5 @@
 from langchain_core.prompts import PromptTemplate
-from typing import Literal  
+from typing import Literal
 from src.pydantic.prompt_validate import query_model
 
 query_mode_router = """
@@ -15,12 +15,14 @@ Return JSON:
 `
 
 User request: {nl_query}
+
+Schema Hinsts:
+{schema_hints}
 """
 
 
-
 enrichment_prompt = PromptTemplate(
-    template=query_mode_router, 
-    input_variables=["nl_query"], 
-    partial_variables={"format_instructions": query_model.get_format_instructions()}
+    template=query_mode_router,
+    input_variables=["nl_query", "schema_hints"],
+    partial_variables={"format_instructions": query_model.get_format_instructions()},
 )

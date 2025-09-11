@@ -6,19 +6,23 @@ from src.utils.logging import get_logger
 import os, json
 
 
-logger = get_logger("schema_index") 
+logger = get_logger("schema_index")
+
 
 def build_schema_docs(info_rows: List[Tuple[str, str, str, str]]) -> List[Document]:
     docs = []
     try:
         for t, c, dtype, comment in info_rows:
-            text = f"table: {t}\ncolumn: {c}\ntype: {dtype}\ndescription: {comment or ''}"
+            text = (
+                f"table: {t}\ncolumn: {c}\ntype: {dtype}\ndescription: {comment or ''}"
+            )
             docs.append(Document(page_content=text, metadata={"table": t, "column": c}))
         logger.info("Successfully built schema docs.")
     except Exception as e:
         logger.error(f"Error building schema docs: {e}")
         raise
     return docs
+
 
 def save_index(docs: List[Document], path: str):
     try:
@@ -34,6 +38,7 @@ def save_index(docs: List[Document], path: str):
         logger.error(f"Error saving index at {path}: {e}")
         raise
 
+
 def load_index(path: str):
     try:
         embs = embedding_model()
@@ -47,6 +52,7 @@ def load_index(path: str):
         logger.error(f"Error loading index from {path}: {e}")
         raise
 
+
 def docs_to_schema_hint(docs: List[Document]) -> str:
     seen = set()
     lines = []
@@ -55,7 +61,7 @@ def docs_to_schema_hint(docs: List[Document]) -> str:
             t = d.metadata.get("table")
             c = d.metadata.get("column")
             key = (t, c)
-            if key in seen: 
+            if key in seen:
                 continue
             seen.add(key)
             lines.append(d.page_content)
@@ -66,7 +72,7 @@ def docs_to_schema_hint(docs: List[Document]) -> str:
     return "\n---\n".join(lines)
 
 
-def retrieve_schema(query: str, k: int = 12, index_path: Optional[str] = None) -> str:
+def retrieve_schema(query: str, k: int = 22, index_path: Optional[str] = None) -> str:
     index_path = index_path or os.getenv("SCHEMA_INDEX_PATH", "./.schema_index")
     try:
         vs = load_index(index_path)

@@ -9,6 +9,7 @@ extract_enrichment_spec = PromptTemplate(
     template="""
 You are an enrichment spec extractor.
 From the user request, extract the enrichment attribute name and a short instruction.
+Instruction should not ask to generate lists, or any other collections. Instruction should only ask to generate integers, strings, or abstract data types.
 
 Return JSON:
 {{
