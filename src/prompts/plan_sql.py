@@ -42,14 +42,8 @@ Context and Rules:
 - Industry (only if explicitly requested): ILIKE on any of INDUSTRY_LINKEDIN / INDUSTRY_NAICS_DESCRIPTION / INDUSTRY_SIC_DESCRIPTION (OR-combined)
 - Keywords:
   - If keywords exist, you MUST build blob and screen with ILIKE contains:
-    blob = COALESCE(c.INDUSTRY_LINKEDIN,'')||' '||COALESCE(c.INDUSTRY_NAICS_DESCRIPTION,'')||' '||
-           COALESCE(c.INDUSTRY_SIC_DESCRIPTION,'')||' '||COALESCE(c.ABOUT_US,'')||' '||COALESCE(c.SPECIALTIES,'')
   - OR all keywords as ILIKE '%term_or_stem%' (use stems like '%chiropract%')
   - Excludes (if present) → AND NOT (blob ILIKE '%term%')
-- Preferred shape when keywords exist:
-    WITH base AS (SELECT * FROM releases.release.org_latest AS c WHERE ...),
-    text AS (SELECT c.*, <blob> AS blob FROM base c),
-    kw AS (SELECT * FROM text WHERE <OR ILIKE terms>)
 
 Safety:
 - Return only SELECT statements. No DML or DDL. No semicolons.
