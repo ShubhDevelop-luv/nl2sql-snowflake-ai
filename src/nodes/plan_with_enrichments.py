@@ -34,7 +34,7 @@ def run_enrichment(state: Dict[str, Any]) -> Dict[str, Any]:
         state["enriched_rows"] = []
         return state
 
-    llm = chat_model(temperature=0.0)
+    llm = chat_model(model="gpt-5-chat-latest", temperature=0.0)
     enriched_rows = []
 
     for row in state["rows"]:

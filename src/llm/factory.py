@@ -2,6 +2,7 @@ from typing import Optional
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from src.config import settings
 
+
 def chat_model(model: Optional[str] = None, temperature: float = 0.1):
     try:
         return ChatOpenAI(
@@ -13,6 +14,7 @@ def chat_model(model: Optional[str] = None, temperature: float = 0.1):
         # Log or handle the error as needed
         print(f"Error initializing ChatOpenAI: {e}")
         return None
+
 
 def embedding_model():
     try:
