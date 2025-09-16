@@ -21,15 +21,29 @@ plan_sql = """
 You are a senior data engineer generating Snowflake SQL.
 Convert the user request into correct, efficient, deterministic SQL.
 
-Context:
+Context and Rules:
 - Table: releases.release.org_latest AS c
-- Always SELECT at least: c.RBID, c.COMPANY_NAME, c.DOMAIN, c.LOCATION_CITY, c.LOCATION_STATE_CODE
-- Default ORDER BY when not specified: c.EMPLOYEE_COUNT_MAX DESC NULLS LAST, c.REVENUE_MAX DESC NULLS LAST
-- Apply LIMIT sample_limit (hard cap 15)
-- Headquarters logic only when user asks for “headquartered” or “based in”: add c.LOCATION_IS_PRIMARY = TRUE
-- Deterministic filters only on real columns (geography, employees, revenue, industry, etc.)
-- Subjective filters: use safe keyword screens across ABOUT_US, SPECIALTIES, INDUSTRY_* descriptions (e.g., ILIKE '%manufactur%')
-- Currency: assume USD. If user mentions another currency, state the assumed USD conversion in search_summary only. Do not alter SQL.
+- Always SELECT:
+  c.COMPANY_NAME, c.HEADQUARTERS_STREET, c.HEADQUARTERS_CITY, c.HEADQUARTERS_STATE_CODE,
+  c.HEADQUARTERS_POSTCODE, c.EMPLOYEE_COUNT_RANGE, c.LINKEDIN_URL, c.WEBSITE, c.ABOUT_US, c.UPDATED_AT,
+  COUNT(*) OVER() AS TOTAL_ROWS
+- ORDER BY c.COMPANY_NAME ASC NULLS LAST
+- LIMIT 15
+- Geography filters:
+  - Country → c.HEADQUARTERS_COUNTRY_CODE = 'ISO2' (map names like 'united states'→'US', 'canada'→'CA')
+  - State → c.HEADQUARTERS_STATE_CODE IN ('US-CA','CA-ON',...)
+  - City → c.HEADQUARTERS_CITY ILIKE '%<city>%'
+  - Street → c.HEADQUARTERS_STREET ILIKE '%<street>%'
+  - Postcode → c.HEADQUARTERS_POSTCODE = '<value>' (or ILIKE '<value>%')
+- Employees/Revenue:
+  - Between A and B → (MIN <= B AND MAX >= A) on EMPLOYEE_COUNT_MIN/MAX or REVENUE_MIN/MAX
+  - ≥ X → MAX >= X
+  - "about X" → ±10%
+- Industry (only if explicitly requested): ILIKE on any of INDUSTRY_LINKEDIN / INDUSTRY_NAICS_DESCRIPTION / INDUSTRY_SIC_DESCRIPTION (OR-combined)
+- Keywords:
+  - If keywords exist, you MUST build blob and screen with ILIKE contains:
+  - OR all keywords as ILIKE '%term_or_stem%' (use stems like '%chiropract%')
+  - Excludes (if present) → AND NOT (blob ILIKE '%term%')
 
 Safety:
 - Return only SELECT statements. No DML or DDL. No semicolons.
@@ -57,6 +71,6 @@ If the request is ambiguous, write a minimal SQL that surfaces key options or as
 
 
 plan_sql_prompt = PromptTemplate(
-    template=plan_sql, 
+    template=plan_sql,
     input_variables=["nl_query", "schema_hint"],
 )
